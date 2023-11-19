@@ -76,6 +76,7 @@ class alperemasrsi(IStrategy):
            (
            
                 (
+                            (dataframe['ema100'] > dataframe['ema200']) &
                             (dataframe['ema50'] < dataframe['ema40']) &
                             (dataframe['ema40'] < dataframe['ema35']) &
                             (dataframe['ema35'] < dataframe['ema30']) &
@@ -96,6 +97,7 @@ class alperemasrsi(IStrategy):
             (
             
               (
+                            (dataframe['ema100'] < dataframe['ema200']) &
                             (dataframe['ema50'] > dataframe['ema40']) &
                             (dataframe['ema40'] > dataframe['ema35']) &
                             (dataframe['ema35'] > dataframe['ema30']) &
