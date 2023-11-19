@@ -85,7 +85,7 @@
                     ) &
                 
                     (dataframe['stoch_rsi'] < self.rsi_oversold_buy.value) & #rsi rsi_oversold_buy değerinden küçükse
-                    (dataframe['open'] > dataframe['close']) & # mum kırmızı ise
+                    #(dataframe['open'] > dataframe['close']) & # mum kırmızı ise
                     (dataframe['close'] > dataframe['ema25'])  # mum ema 25 üzerinde ise
                 ),
                 'enter_long'] = 1
