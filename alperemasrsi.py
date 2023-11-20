@@ -1,4 +1,4 @@
-from freqtrade.strategy import IStrategy
+from freqtrade.strategy import (BooleanParameter, CategoricalParameter, DecimalParameter, IStrategy, IntParameter)
 from typing import Dict, List
 from functools import reduce
 from pandas import DataFrame
@@ -39,8 +39,8 @@ class alperemasrsi(IStrategy):
     }
 
     # Hyperopta uygun rsi değerleri
-    rsi_oversold_buy = DecimalParameter(10, 80, decimals=5, default=20, space="buy")
-    rsi_oversold_sell = DecimalParameter(10, 80, decimals=5, default=80, space="sell")
+    rsi_oversold_buy = IntParameter(10, 40, default=20, space="buy")
+    rsi_oversold_sell = IntParameter(60, 100, default=80, space="sell")
 
     def informative_pairs(self):
         """
@@ -56,7 +56,13 @@ class alperemasrsi(IStrategy):
         return []
 
     def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-
+        #RSI
+        dataframe['rsi'] = ta.RSI(dataframe, timeperiod=14)
+        # Stochastic RSI
+        stoch_rsi = ta.STOCHRSI(dataframe)
+        dataframe['fastd_rsi'] = stoch_rsi['fastd']
+        dataframe['fastk_rsi'] = stoch_rsi['fastk']
+        
         dataframe['ema20'] = ta.EMA(dataframe, timeperiod=20)
         dataframe['ema25'] = ta.EMA(dataframe, timeperiod=25)
         dataframe['ema30'] = ta.EMA(dataframe, timeperiod=30)
@@ -65,7 +71,7 @@ class alperemasrsi(IStrategy):
         dataframe['ema50'] = ta.EMA(dataframe, timeperiod=50)
         dataframe['ema100'] = ta.EMA(dataframe, timeperiod=100)
         dataframe['ema200'] = ta.EMA(dataframe, timeperiod=200)
-        dataframe['stoch_rsi'] = ta.momentum.stochrsi(close=dataframe['close'], window=14, smooth1=3, smooth2=3)
+        #dataframe['stoch_rsi'] = ta.momentum.stochrsi(close=dataframe['close'], window=14, smooth1=3, smooth2=3)
 
         return dataframe
 
@@ -84,7 +90,7 @@ class alperemasrsi(IStrategy):
                             (dataframe['volume'] > 0)
                 ) &
             
-                (dataframe['stoch_rsi'] < self.rsi_oversold_buy.value) & #rsi rsi_oversold_buy değerinden küçükse
+                (dataframe['fastd_rsi'] < self.rsi_oversold_buy.value) & #rsi rsi_oversold_buy değerinden küçükse
                 (dataframe['open'] > dataframe['close']) & # mum kırmızı ise
                 (dataframe['close'] > dataframe['ema25'])  # mum ema 25 üzerinde ise
             ),
@@ -104,7 +110,7 @@ class alperemasrsi(IStrategy):
                             (dataframe['ema30'] > dataframe['ema20']) &
                             (dataframe['volume'] > 0)
                 ) &
-                (dataframe['stoch_rsi'] > self.rsi_oversold_sell.value) & 
+                (dataframe['fastd_rsi'] > self.rsi_oversold_sell.value) & 
                 (dataframe['open'] < dataframe['close']) & 
                 (dataframe['close'] < dataframe['ema25'])
             ),
